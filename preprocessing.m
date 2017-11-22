@@ -1,12 +1,17 @@
+function [out_fname, nchan, ntrls,fs]=preprocessing(cond_nr,montage,mred,subERP)
+%%% cond_nr: 1 to 6, conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
+%%% montage: 0 - bipolar, 1 - grand average
+%%% mred: mean reduction 0/1
+%%% subERP: ERP subtraction 0/1
+
+%% montage
 %files with bipolar montage exist (result of the script bipolar_montage.m)
 localisation ='_HG';
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 subject = '348';
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' subject localisation '\'];
-cond = char(conds(6));
-montage = 0; %0 - bipolar, 1 - grand average
-mred=0; %temporal mean reduction 0/1
-subERP = 0;%subtract ERP?
+cond = char(conds(cond_nr));
+
 if montage==0
     %bipolar_montage_HG(path,cond);
     condit = [cond, '_bipolar'];
@@ -48,27 +53,18 @@ if subERP==1
         end
     end
 end
-%% highpass filtering & random stationarity check
-t0 = 1;
-t_end = 500;
-winlen = 100;
-sum = 0;
+%% highpass filtering and commented detrending
+%detrend(x) removes the best straight-line fit from vector x and returns it in y....
+%If x is a matrix, detrend removes the trend from each column.
 [b,a] = butter(3, 5/(fs/2), 'high');
-sig = zeros(size(sig));
+sig_out = zeros(size(sig));
 for tr=1:ntrls
     for c = 1:nchan
-        sig(c,:,tr) = filtfilt(b,a, sig(c,:,tr));
-        rand_t = randi([t0 t_end - winlen],1,1);
-        sum = sum+ adftest(sig(c,rand_t:rand_t+winlen,tr));
+        sig_out(c,:,tr) = filtfilt(b,a, sig(c,:,tr));
     end
+    %sig_out(:,:,tr) = (detrend(sig_out(:,:,tr)'))';
 end
-out_fname = [path,condit, '_mont_filt_.mat'];
-save(out_fname, 'sig');
-%% DTF analysis
-fstart = 5;
-fend = 50;
-chansel = '1,2,3,4';
-winshf = 5;
-winnum = [];
 
-DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,winlen,winshf,winnum,t0,t_end)
+%%
+out_fname = [path,condit, '_mont_filt_.mat'];
+save(out_fname, 'sig_out');
