@@ -1,19 +1,25 @@
-dt=0.004;
-t = 0:dt:4-dt;
-s = zeros(2,length(t));
+dt=0.004;  
+t = 0:dt:4-dt;  
 N = size(t);
+s = zeros(2,length(t));
 
 n1 = 0.05*randn(N);     n2 = 0.05*randn(N);
-source1 = @(t,f) sin(2*pi*t*5);
-source2 = @(t,f) sin(2*pi*t*81)+n2;
-s(1,:) = 1.7*source1(t);
-%s(2,:) = source2(t); 
-s(2,:) = (0.7*source1(t-2*dt))+(source2(t)) + 0.05*randn(N); 
+source1 = @(t) sin(2*pi*t*5);
+source2 = @(t) sin(2*pi*t*81)+n2;
+s(1,:) = 1.7*source1(t); 
+s(2,:) = 0.7*source1(t) + source2(t) + 0.05*randn(N); 
 plot(s')
 
 save('test.mat', 's')
 
-  
+% t=0:0.002:10;
+% s = zeros(2,length(t));
+% s(1,:)=1.7*sin(2*pi*5*t);
+% s(2,:)=sin(2*pi*81*t);
+% s(2,2:end)=s(2,2:end)+0.7*s(1,1:end-1);
+% s(2,:)=s(2,:)+0.1*randn(1,length(t));
+% save('test.mat', 's')
+%   
 %s(4,:) = 0.2.*randn(N);
 %s(4,:) = 0.7*source1(t-2)+0.4*source2(t-3) + 0.05*randn(N); 
 %f1= 17.*ones(N)+0.1*randn(N);

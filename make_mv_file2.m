@@ -3,18 +3,18 @@ conds = {'0-2', '0-4', '0-8', '2', '4','8'};
 %for v = 1:length(conds)
     subject = '348';
     %fname = 'C:\Users\Alicja\Desktop\Newcastle\348\348_HG\Coh-4-bipolar_ERP.mat'; %path
-    fname = 'test.mat';
+    fname = 'C:\Users\Alicja\Desktop\Newcastle\test_multitrial.mat';
     %fname = 'Coh-2-bipolar.mat';
-    chans = 2;%11 channels
-    ntrls = 1; %75 number of trials
-    fsamp = 250; % sampling frequency
+    chans = 7;%11 channels
+    ntrls = 10; %75 number of trials
+    fsamp = 1000; % sampling frequency
     fstart = 0;
-    fend = 90; %100 max frequency
+    fend = 200; %100 max frequency
     pord = 0; % model order 0 - estimate
     format = 6; %MAT file
     trial_mode = 0; % 0 == multitrial; 1 == trial-by-trial
     %chansel = '1,3,5,7,9,11';
-    chansel = '1,2';
+    chansel = '1,2,3,4,5';
     %descfil = 'C:\Users\Alicja\Desktop\Newcastle\348\348_HG\ChanNums.txt';
     descfil = 'testchans.txt';
     winlen = []; %100 window length [] 
@@ -22,7 +22,7 @@ conds = {'0-2', '0-4', '0-8', '2', '4','8'};
     winnum = 1; %20 number of windows #unobligatory
 
     baseln = 0; %estimate baseline
-    bootst = 0; %run bootstrap
+    bootst = 1; %run bootstrap
     siglev = 2; %significance level 1 = .99; 2 = .95; 3 = .9; 4 = .75;
     norm2 = 0; %ensemble mean
 
@@ -37,7 +37,7 @@ conds = {'0-2', '0-4', '0-8', '2', '4','8'};
         'pDTF',1,'pNDTF',0,'pSpect',0,'pCohs',0,'pdDTF',1,'pPDC',1,'pffDTF',0,...
         'sDTF',1,'sNDTF',0,'sSpect',0,'sCohs',0,'sdDTF',0,'sPDC',0,'sffDTF',0,...
         'sAR',1,'savefigs',1,...
-        'userange',1,'timerangestart',1,'timerangeend',250,'pautoflag',0,...
+        'userange',0,'timerangestart',1,'timerangeend',100,'pautoflag',0,...
         'incl_instant',0);
 
     clearvars -except mv veps

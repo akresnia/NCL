@@ -1,20 +1,19 @@
-function bipolar_montage_HG(path, condition)
+function bipolar_montage_HG(path, condition, data_in)
 %%condition is a string 'Coh-0-2','Coh-2' etc.
+%%% data_in is a matrix in format (chan x samples x trials)
 % HG pairing
 
-data_in = load([path,condition '.mat'],'X');
-X = data_in.X;
-n_HG = size(X,1); %electrodes
-X_bipolar = NaN(n_HG-1, size(X,2), size(X,3));
+[chan,samp,epoc]=size(data_in);
+X_bipolar = NaN(chan-1, samp, epoc);
 
-for n = 1:(n_HG-1)
-   X_bipolar(n,:,:) = X(n+1,:,:) - X(n,:,:);
+for n = 1:(chan-1)
+   X_bipolar(n,:,:) = data_in(n+1,:,:) - data_in(n,:,:);
 %    for tr=1:size(X,3)
 %        X_bipolar(n,:,tr) = (X_bipolar(n,:,tr) - mean(X_bipolar(n,:,tr)))/std(X_bipolar(n,:,tr));  
 %    end
 end
-data_out = X_bipolar;
-save([path,condition, '_bipolar.mat'], 'data_out');
+X = X_bipolar;
+save([path,condition, '_bipolar.mat'], 'X');
 %% TG pairing
 % bipolar_data = [];
 % bipolar_labels = [];
