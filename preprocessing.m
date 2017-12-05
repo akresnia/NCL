@@ -107,7 +107,10 @@ end
 %If x is a matrix, detrend removes the trend from each column.
 % we probably should detrend windowed signal, not the raw one
 sig_out = zeros(size(sig));
-if filt==1
+if filt==0
+    name_suffix = 'mont.mat';
+    sig_out = sig;
+else
     [b,a] = butter(5, 5/(fs/2), 'high');
     for tr=1:ntrls
         for c = 1:nchan
@@ -116,9 +119,6 @@ if filt==1
         %sig_out(:,:,tr) = (detrend(sig_out(:,:,tr)'))';
     end
     name_suffix= 'mont_filt.mat';
-else
-    name_suffix = 'mont.mat';
-    sig_out = sig;
 end
 
 %%
