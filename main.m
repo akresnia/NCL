@@ -1,5 +1,5 @@
 %%% cond_nr: 1 to 6, conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'
-cond_nr = 6;
+cond_nr = 3;
 mred = 0; subERP = 0; ch_del = 1; filt=0;
 subflag=0;
 loc = 0; %localisation 0 - HG, 1 - TG

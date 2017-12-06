@@ -5,7 +5,7 @@ function [out_fname, nchan, ntrls,fs]=preprocessing(mont,loc, cond_nr,ch_del,mon
 %%% montage: 0 - bipolar, 1 - grand average, 2 - common reference (raw data)
 %%% mred: mean reduction 0/1
 %%% subERP: ERP subtraction 0/1
-%%% ch_110del: deleting of electrode 110 (very low std for Coh-8)
+%%% ch_del: deleting of electrode 110 (very low std for Coh-8)
 %%% filt: flag for highpass filtering 5Hz 0/1
 
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
