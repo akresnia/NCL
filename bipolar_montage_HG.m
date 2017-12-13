@@ -1,5 +1,5 @@
 function bipolar_montage_HG(path, condition, data_in)
-%%condition is a string 'Coh-0-2','Coh-2' etc.
+%%condition is a string 'Coh-0-2','Coh-2' etc, for saving.
 %%% data_in is a matrix in format (chan x samples x trials)
 % HG pairing
 
