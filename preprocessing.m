@@ -1,20 +1,21 @@
-function [out_fname, nchan, ntrls,fs]=preprocessing(subject,loc, cond_nr,dec,montage,subERP,filt)
+function [out_fname, nchan, ntrls,fs]=preprocessing(subject,loc, cond_nr,dec,mont_nr,subERP,filt)
 %%% subject: '288_004' or '348';
 %%% loc: 'HG', 'TG'
 %%% cond_nr: 1 to 6, conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
 %%% dec: decimation factor (suggested range 2-5)
-%%% montage: 0 - bipolar, 1 - grand average, 2 - common reference (raw data)
+%%% mont_nr: 1 - bipolar, 2 - common average, 3 - common reference (raw data)
 %%% subERP: ERP subtraction 0/1
 %%% filt: flag for highpass filtering 5Hz 0/1
 
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
+montages={'Bplr','CAvr','CRef'};
+montage = char(montages(mont_nr));
 
 %% loading data
 %files with bipolar montage exist (result of the script bipolar_montage.m)
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' subject '_' loc '\'];
 cond = char(conds(cond_nr));
-
-data = load([path,cond '.mat'],'X'); 
+data = load([path cond '.mat'],'X'); 
 data_in = data.X;
 
 %% deleting bad electrode
@@ -22,27 +23,24 @@ data_in = data.X;
 
 if (strcmp(loc,'HG') && strcmp(subject,'348')) %loc=='HG'
     data_in = [data_in(1,:,:);data_in(3:end,:,:)];
-    cond = [cond, '-110'];
+    %cond = [cond, '-110'];
 elseif (strcmp(loc,'TG') && strcmp(subject,'348'))
     data_in = [data_in(1:36,:,:);data_in(38:end,:,:)];
-    cond = [cond, '-229'];
+    %cond = [cond, '-229'];
 end
 %% montage
 if strcmp(loc,'TG') %only common reference for TG
-    montage=2;
+    mont_nr=3;
 end
-
-if montage==0
+condit = [cond '_' montage];
+if mont_nr==1
     data_mont = bipolar_montage_HG(data_in);
     X = data_mont.X_bipolar;
-    condit = [cond, '_bipolar'];
-elseif montage==1
+elseif mont_nr==2
     data_mont = GA_montage(data_in);
-    X = data_mont.X_GA;
-    condit = [cond, '_GA'];
-elseif montage==2
+    X = data_mont.X_GA;    
+elseif mont_nr==3
     X = data_in;
-    condit = cond;
 else
     error('wrong montage parameter')
 end
@@ -97,9 +95,9 @@ end
 
 out_fname = [path,condit, name_suffix, '.mat'];
 save(out_fname, 'sig_out');
-save([out_fname(1:end-4) 'n_ch.mat'], 'nchan');
+save([out_fname(1:end-4) '_nch.mat'], 'nchan');
 
-%%
+%% std testing for bad electrodes removal
 % zm = zeros(nchan,1);
 % for i=1:nchan
 % zm(i) = mean(std(sig_out(i,:,:)));
