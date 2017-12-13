@@ -6,10 +6,10 @@ dec = 4; %decimation factor
 %mred = 0; subERP = 0; ch_del = 1; filt=0;loc = 0; %localisation 0 - HG, 1 - TG
 subflag=0;
 mont =1; % .mat file exists
-subject = '348'; %'348' or '288_004'
+subject = '288_004'; %'348' or '288_004'
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' ];
 TG_electrodes = '28,36'; %number of row 1-63
-HG_electrodes = '2,3,4,5,6,7,8,9,10'; %number of row 1-11
+HG_electrodes = '2,3,4,5,6,7,8'; %number of row 1-11
 TG_idx = str2num(TG_electrodes); HG_idx = str2num(HG_electrodes);
 
 %% create file with channel numbers
@@ -26,7 +26,7 @@ descfil = [path 'TG_HG_chans.txt'];
 %% omitting preprocessing script
 for i=1:length(cond_nrs)
     cond_nr = cond_nrs(i);
-    name_suffix = ['_dec' dec '.mat'];
+    name_suffix = ['_dec' num2str(dec) '.mat'];
     cond = char(conds(cond_nr));
     if strcmp(subject,'348')
         condit_HG = [cond, '-110'];

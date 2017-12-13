@@ -1,23 +1,24 @@
 %%% cond_nr: 1 to 6, conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'
-subject = '288_004';%or '348'
+subject = '288_004';%'288_004' or '348'
+ntrls = 75;
 cond_nr = 3;
 dec = 4; %decimation factor
-mred = 0; subERP = 0; filt=0;
+subERP = 0; filt=0;
 subflag = 0;
-loc = 'HG'; %localisation 'HG', 'TG'
-mont = 1; % .mat file exists
+loc = 'TG'; %localisation 'HG', 'TG'
+mont = 0; % decimated .mat file exists
 montage = 2; %0-bipolar, 1 - CAR, 2-CRef
+path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\']; 
 %% DTF parameters
-decf = 4;
-t0 = 500/decf;
-t_end = 1900/decf;
-winlen = 80/decf;
+t0 = 500/dec;
+t_end = 1900/dec;
+winlen = 80/dec;
 fstart = 0;
 fend = 30;
-winshf = 20/decf;
+winshf = 20/dec;
 winnum = [];
 chansel = '1-';
-descfil = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' loc '_chans.txt'];
+descfil = [path loc '_chans.txt'];
 % chansel='6,7,9,10';
 
 %% DTF analysis
@@ -26,8 +27,18 @@ descfil = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' loc '_chans.txt'];
 if strcmp(loc, 'TG')     
     chansel = '1 , 3  ,4 ,9 , 10 , 11 , 12,17,18,19,20,28';%'1,9,17,25,33,40,48,56';
 end
-[out_fname, nchan, ntrls,fs] = preprocessing(mont,loc,cond_nr,dec,montage,mred,subERP,filt);
-    
+
+if mont==0
+    [out_fname, nchan, ntrls,fs] = preprocessing(subject,loc,cond_nr,dec,montage,subERP,filt);
+else
+    path = [path subject '_' loc '\'];
+    condit = 'a';
+    name_suffix = 'b';
+    out_fname = [path,condit, name_suffix];
+    nch = load([out_fname(1:end-4) 'n_ch.mat']);
+    nchan = nch.nchan;
+    fs = 1000/dec;
+end
 DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,...
     descfil,winlen,winshf,winnum,t0,t_end)    
 

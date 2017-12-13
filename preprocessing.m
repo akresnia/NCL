@@ -1,37 +1,30 @@
-function [out_fname, nchan, ntrls,fs]=preprocessing(mont,loc, cond_nr,dec,montage,mred,subERP,filt)
-%%% mont = 0; %montage done before; 0-no file, 1 - .mat file exists
+function [out_fname, nchan, ntrls,fs]=preprocessing(subject,loc, cond_nr,dec,montage,subERP,filt)
+%%% subject: '288_004' or '348';
 %%% loc: 'HG', 'TG'
 %%% cond_nr: 1 to 6, conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
 %%% dec: decimation factor (suggested range 2-5)
 %%% montage: 0 - bipolar, 1 - grand average, 2 - common reference (raw data)
-%%% mred: mean reduction 0/1
 %%% subERP: ERP subtraction 0/1
 %%% filt: flag for highpass filtering 5Hz 0/1
 
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
-subject = '288_004';%'348';
 
 %% loading data
 %files with bipolar montage exist (result of the script bipolar_montage.m)
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' subject '_' loc '\'];
 cond = char(conds(cond_nr));
 
-if mont==0
 data = load([path,cond '.mat'],'X'); 
 data_in = data.X;
-end
+
 %% deleting bad electrode
-%2nd in HG or 37th in TG (110/229)
+%2nd in HG or 37th in TG (110/229) for subject 348
 
 if (strcmp(loc,'HG') && strcmp(subject,'348')) %loc=='HG'
-    if mont==0
-        data_in = [data_in(1,:,:);data_in(3:end,:,:)];
-    end
+    data_in = [data_in(1,:,:);data_in(3:end,:,:)];
     cond = [cond, '-110'];
 elseif (strcmp(loc,'TG') && strcmp(subject,'348'))
-    if mont==0
-        data_in = [data_in(1:36,:,:);data_in(38:end,:,:)];
-    end
+    data_in = [data_in(1:36,:,:);data_in(38:end,:,:)];
     cond = [cond, '-229'];
 end
 %% montage
@@ -40,33 +33,23 @@ if strcmp(loc,'TG') %only common reference for TG
 end
 
 if montage==0
-    if mont==0
-        data_mont = bipolar_montage_HG(path,cond,data_in);
-        X = data_mont.X;
-    end
+    data_mont = bipolar_montage_HG(data_in);
+    X = data_mont.X_bipolar;
     condit = [cond, '_bipolar'];
 elseif montage==1
-    if mont==0
-        data_mont = GA_montage(path,cond, data_in);
-        X = data_mont.X;
-    end
+    data_mont = GA_montage(data_in);
+    X = data_mont.X_GA;
     condit = [cond, '_GA'];
 elseif montage==2
-    if mont==0
-        X = data_in;
-        %save([path,cond, '.mat'], 'X');
-    end
+    X = data_in;
     condit = cond;
 else
     error('wrong montage parameter')
 end
 
-fname = [path, condit, '.mat']; 
 fs = 1000;
 
-%% load data
-data=load(fname);
-X = data.X;
+%% get data parameters
 nchan = size(X,1); %11 channels for 348 HG
 ntrls = size(X,3); %75 trials
 
@@ -80,7 +63,6 @@ for ch=1:nchan
     end
 end
 
- 
 %% temporal mean reduction is done inside mmultar (DTF) package
 
 %% subtract ERP?
@@ -100,7 +82,7 @@ end
 % we probably should detrend windowed signal, not the raw one
 sig_out = zeros(size(sig));
 if filt==0
-    name_suffix = [ns '_dec' dec '.mat'];
+    name_suffix = [ns '_dec' num2str(dec)];
     sig_out = sig;
 else
     [b,a] = butter(5, 5/(fs/2), 'high');
@@ -110,8 +92,12 @@ else
         end
         %sig_out(:,:,tr) = (detrend(sig_out(:,:,tr)'))';
     end
-    name_suffix= [ns '_dec' dec '_filt.mat'];
+    name_suffix= [ns '_dec' num2str(dec) '_filt'];
 end
+
+out_fname = [path,condit, name_suffix, '.mat'];
+save(out_fname, 'sig_out');
+save([out_fname(1:end-4) 'n_ch.mat'], 'nchan');
 
 %%
 % zm = zeros(nchan,1);
@@ -122,6 +108,5 @@ end
 % hold on
 % plot(zm)
 % title('mean std of channels')
-out_fname = [path,condit, name_suffix];
-save(out_fname, 'sig_out');
+
 %stationarity check may be done in licz_smtmvar.m
