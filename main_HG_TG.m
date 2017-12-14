@@ -1,24 +1,39 @@
 %%% only CRef montage
-%%% cond_nr: 1 to 6, 
 conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
-montages={'Bplr','CAvr','CRef'};
-mont_nr =3;
-montage = char(montages(mont_nr));
+cond_nrs = [1,4]; % choose conditions for comparison, cond_nr: 1 to 6
 
-cond_nrs = [3,6];
-dec = 4; %decimation factor
-%mred = 0; subERP = 0; ch_del = 1; filt=0;loc = 0; %localisation 0 - HG, 1 - TG
-subflag=0;
-mont =1; % .mat file exists
-subject = '288_004'; %'348' or '288_004'
+montages={'Bplr','CAvr','CRef'};
+mont_nr = 3; %there is no bipolar available for TG
+subject = '348'; %'348' or '288_004'
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' ];
+
+%choose electrodes for analysis:
 TG_electrodes = '28,36'; %number of el. in descfile (348:1-63) or (288:1-96) 
 HG_electrodes = '2,3,4,5,6,7,8'; %(1-11) or (1-8)
-TG_idx = str2num(TG_electrodes); HG_idx = str2num(HG_electrodes);
+
+%data and analysis parameters
+dec = 4; %decimation factor
+fs = 1000/dec; %original sampling frequency 1000 Hz
+subERP = 0; filt=0;
+subflag = 1; %subtraction analysis 0/1
+boot=0; %subtraction of bootstrapped (1) or "normal" (0) DTF plots
+
+%% DTF parameters
+% 0-500ms = silence; 500-1200ms = ground; 1200-1900ms = figure+ground;
+% 1900-2400ms = silence
+t0 = 500/dec; %time range
+t_end = 1900/dec;
+winlen = 80/dec; %window length [samples]
+fstart = 0; %freq range
+fend = 30;
+winshf = 20/dec; %window shift [samples]
+winnum = []; %number of windows; [] = program calculates from wlen and wshf
+chansel= '1-'; %'1,2,6,7,8'; '1-' = all
 
 %% create file with channel numbers 
 % in HG for bipolar mont. plots will be labeled with numbers of...
 % more medial (smaller) electrode from each pair
+TG_idx = str2num(TG_electrodes); HG_idx = str2num(HG_electrodes);
 chn_HG = load([path,subject,'_HG\Coh-2.mat'], 'ChanNums');
 chn_TG = load([path,subject,'_TG\Coh-2.mat'], 'ChanNums');
 TG_HG_el_No = [chn_TG.ChanNums(TG_idx) chn_HG.ChanNums(HG_idx)]; %electrode numbers
@@ -30,23 +45,33 @@ fclose(fid);
 descfil = [path 'TG_HG_chans.txt'];
 
 %% omitting preprocessing script
-for i=1:length(cond_nrs)
-    cond_nr = cond_nrs(i);
-    name_suffix = ['_dec' num2str(dec) '.mat'];
+montage = char(montages(mont_nr));
+for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
+    ns = ''; %temp name_suffix
+    if subERP==1; ns='-ERP'; end
+    if filt==0; name_suffix = [ns '_dec' num2str(dec)];
+    else name_suffix = [ns '_dec' num2str(dec) '_filt'];end
+    %name_suffix = '_dec4';
     cond = char(conds(cond_nr));
     condit = [cond '_' montage];
     if sum(strcmp(subject,{'348', '288_004'}))==0
-%         condit_HG = [cond, '-110'];
-%         condit_TG = [cond, '-229'];
-%     elseif strcmp(subject,'288_004')
-%         condit_HG = cond;
-%         condit_TG = cond;
-%     else
         error('Subject not checked for bad electrodes')
     end
-    out_fname_HG = [path,subject, '_HG\', condit, name_suffix];
-    out_fname_TG = [path,subject, '_TG\',condit, name_suffix];
+    out_fname_HG = [path,subject, '_HG\', condit, name_suffix, '.mat'];
+    out_fname_TG = [path,subject, '_TG\',condit, name_suffix, '.mat'];
 
+    %% check if files exist
+    t = length(dir(out_fname_HG)); %0 if preprocessed file doesn't exist
+    if t==0
+        disp 'preprocessing...'
+        preprocessing(subject,'HG',cond_nr,dec,mont_nr,subERP,filt);
+    end
+    
+    t = length(dir(out_fname_TG)); %0 if preprocessed file doesn't exist
+    if t==0
+        disp 'preprocessing...'
+        preprocessing(subject,'TG',cond_nr,dec,mont_nr,subERP,filt);
+    end
     %% create new file
     data_HG = load(out_fname_HG);
     data_TG = load(out_fname_TG);
@@ -63,21 +88,9 @@ for i=1:length(cond_nrs)
         error('beep!')
     end
     ntrls = size(data,3);
-    out_fname = [path,condit,'_',TG_electrodes,';', HG_electrodes,'_TG_HG.mat'];
+    name_suffix_long = [name_suffix, '_',TG_electrodes,';', HG_electrodes,'_TG_HG']; 
+    out_fname = [path,condit,name_suffix_long, '.mat'];
     save(out_fname,'data');
-    %% DTF parameters
-    t0 = 250/2;
-    t_end = 950/2;
-    winlen = 40/2;
-    fstart = 0;
-    fend = 30;
-    winshf = 10/2;
-    winnum = [];
-    %fs = 500;
-    chansel= '1-'; %'1,2,6,7,8';
-%     for i=2:nchan %selecting all channels for analysis
-%     chansel=[chansel, ',',num2str(i)];
-%     end
 
     %% DTF analysis
     %changed amultipcolor.m!
@@ -89,13 +102,10 @@ end
 
 %% Subtraction analysis
 if subflag==1
-    d = cond(end); %2/4/8
-    load([path,'Coh-0-', d ,'_', montage, '_',TG_electrodes,';', HG_electrodes,'_TG_HG_DTF_datv.mat'])
-    %'_DTF_datv_Boot.mat']
-    datv_exp = load([path,'Coh-', d,'_', montage,'_',TG_electrodes,';',HG_electrodes,'_TG_HG_DTF_datv.mat']);
-    datv_exp=datv_exp.datv;
-    load([out_fname(1:end-4), '_opis.mat']);
-    load('FVL.mat');
-    smultipcolor(datv_exp-datv,0,1,FVL{3}.tt,{[montage...
-        ' Coh-' d ' - Coh-0-' d] FVL{3}.sx},opis,1,0); %smultipcolor3 for Boot data
+    if (length(cond_nrs)==2 && (cond_nrs(2)-cond_nrs(1)==3))
+        cond_nrs = cond_nrs(1);
+    end
+    for cond_nr=cond_nrs
+        subtr_analysis(cond, path, montage, name_suffix_long,boot);
+    end
 end
