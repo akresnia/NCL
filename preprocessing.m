@@ -27,6 +27,12 @@ if (strcmp(loc,'HG') && strcmp(subject,'348')) %loc=='HG'
 elseif (strcmp(loc,'TG') && strcmp(subject,'348'))
     data_in = [data_in(1:36,:,:);data_in(38:end,:,:)];
     %cond = [cond, '-229'];
+elseif (strcmp(loc,'HG') && strcmp(subject,'288_004'))
+    disp('no bad electrodes')
+elseif (strcmp(loc,'TG') && strcmp(subject,'288_004'))
+    disp('patient not checked for bad electrodes')
+else
+    disp('patient not checked for bad electrodes')
 end
 %% montage
 if strcmp(loc,'TG') %only common reference for TG
@@ -35,7 +41,7 @@ end
 condit = [cond '_' montage];
 if mont_nr==1
     data_mont = bipolar_montage_HG(data_in);
-    X = data_mont.X_bipolar;
+    X = data_mont;
 elseif mont_nr==2
     data_mont = GA_montage(data_in);
     X = data_mont.X_GA;    
