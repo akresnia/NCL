@@ -63,7 +63,7 @@ if subflag==1
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        singleplots = {[1,2]}; %{[]} or {[i,j]} or {[i,j],[k,l]}
+        singleplots = {[3,2]}; %{[]} or {[i,j]} or {[i,j],[k,l]}
         subtr_analysis(cond, path, montage, name_suffix,boot,singleplots,fstart,30);
     end
 end
