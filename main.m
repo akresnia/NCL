@@ -1,26 +1,26 @@
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 
-subject = '348';%'288_004' or '348'
+subject = '288_004';%'288_004' or '348'
 ntrls = 75;
-cond_nrs = [2,5];
-mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
+cond_nrs = [3,6];
+mont_nr = 1; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
-dec = 4; %decimation factor
+dec = 2; %decimation factor
 fs = 1000/dec; %sampling freq
 subERP = 0; filt=0; %0/1
 subflag = 1;
 boot=0; %subtraction of bootstrapped (1) or "normal" (0) DTF plots
-loc = 'TG'; %localisation 'HG' or 'TG'
+loc = 'HG'; %localisation 'HG' or 'TG'
 
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\']; 
 %% DTF parameters
-t0 = 500/dec;
-t_end = 1900/dec;
+t0 = 1;%500/dec;
+t_end =2400/dec; %1900/dec;
 winlen = 80/dec;
-fstart = 0;
-fend = 30;
+fstart = 1;
+fend = 100;
 winshf = 20/dec;
 winnum = [];
 chansel = '1-';
@@ -63,6 +63,7 @@ if subflag==1
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        subtr_analysis(cond, path, montage, name_suffix,boot);
+        singleplots = {[1,2]}; %{[]} or {[i,j]} or {[i,j],[k,l]}
+        subtr_analysis(cond, path, montage, name_suffix,boot,singleplots,fstart,30);
     end
 end

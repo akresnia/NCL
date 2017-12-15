@@ -1,4 +1,4 @@
-function [ datv_sub ] = subtr_analysis(cond, path, montage, name_suffix, boot,single_trials,fmax,fmin)
+function [ datv_sub ] = subtr_analysis(cond, path, montage, name_suffix, boot,single_trials,fmin,fmax)
 %plots figure which is a subtraction of coh- and coh-0- plots
 %   cond: condition name (char) i.e. 'Coh-0-8'
 %   path: directory of calculated DTF matrices
@@ -33,17 +33,18 @@ if chck==2
         smultipcolor3(datv_sub,0,1,FVL{3}.tt,{[montage...
             ' Coh-' c ' - Coh-0-' c] FVL{3}.sx},opis,1,0);
         end
-        for i=single_trials %{[1,1],[2,2]}
-            i1 = i{1}(1);
-            i2 = i{1}(2);
-            if boot==0
-%                 smultipcolor(datv_sub(i1,i2,:,:),0,1,FVL{3}.tt,{[montage...
-%                 ' Coh-' c ' - Coh-0-' c] FVL{3}.sx},opis(i1),1,0);
+        if ~isempty(single_trials{1})
+            for i=single_trials %{[1,1],[2,2]}
+                i1 = i{1}(1);
+                i2 = i{1}(2);
+                el1 = opis(i1); el2 = opis(i2);
                 figure()
+                
                 pcolor(squeeze(datv_sub(i1,i2,:,:)))
                 shading(gca, 'flat')
                 colorbar
-                
+                title({[montage ' Coh-' c ' - Coh-0-' c] FVL{3}.sx(2:end)})
+
                 global FRQPMAX
                 fstep = (fmax - fmin)/FRQPMAX;
                 ax = gca;
@@ -53,10 +54,15 @@ if chck==2
                 set(ax,'XTickLabel',{'0','500','1200','1900','2400'});
                 set(ax,'TickDir','out');
                 set(ax, 'XGrid','on');
+                tcks = linspace(fmin,fmax,10);
+                datastring=sprintf('%g,',round(tcks));
+                datastring = datastring(1:end-1);
+                str_ticks= strsplit(datastring, ',');
+                set(ax,'YTickLabel',str_ticks);
                 %yticklabels({num2str(1:fstep:fmax)})
-                ylabel('freq in constant scale 0-100');
-                xlabel('time [ms]');
-                
+                ylabel(['sink ' el2 'frequency [Hz]' ]);
+                xlabel(['time [ms] ' 'source' el1]);
+
                 ylims = get(gca,'YLim');
                 hold on
                 plot([xlim*5/24, xlim*5/24],ylims, '--r')
