@@ -6,41 +6,41 @@ function [ data_sub ] = subtr_analysis(funnums, cond, path, montage, name_suffix
 %   name_suffix: i.e. _dec4 or _dec4_filt
 
 c = cond(end); %2/4/8
-fn1 = [path 'Coh-' c '_' montage name_suffix]; %filename1
-fn2 = [path 'Coh-0-' c '_' montage name_suffix];
+fn1 = [path 'Coh-' c '_' montage name_suffix '.mat']; %filename1
+fn2 = [path 'Coh-0-' c '_' montage name_suffix '.mat'];
 
 boot_sfx='';
 if boot==1
-    boot_sfx='_Boot';
+    boot_sfx='_boot';
 end
 
-chck = length(dir([fn1 '_mout' boot_sfx '.mat'])) + ...
-    length(dir([fn2 '_mout' boot_sfx '.mat'])); %check if both files exist
+chck = length(dir([fn1 '_mout.mat'])) + ...
+    length(dir([fn2 '_mout.mat'])); %check if both files exist
 
 if chck==2
-    datv = load([fn1 '_mout' boot_sfx '.mat']);
-    datv_ctrl = load([fn2 '_mout' boot_sfx '.mat']);%control condition data
+    datv = load([fn1 '_mout.mat']);
+    datv_ctrl = load([fn2 '_mout.mat']);%control condition data
     %datv_ctrl = datv_ctrl.datv;
     opis1 = datv.mv;
     opis2 = datv_ctrl.mv;
-    if isequal(opis1.opisy, opis2.opisy)==1
+    if isequal(opis1.opisy, opis2.opisy)==1 %check of channels descriptions
+        global FVL FVS
         for funnum=funnums
             %opis1 = load([fn1 '_opis.mat']); 
             %load([fn2 '_opis.mat']);
             condsub = [' Coh-' c ' - Coh-0-' c];
-            global FVL FVS
-            funname = eval(FVS{funnum}.vn); %get the variable name
-            data = datv.funname;
-            data_ctrl = datv_ctrl.funname;
+            funname = [FVS{funnum}.vn boot_sfx]; %get the variable name
+            data = datv.(funname);
+            data_ctrl = datv_ctrl.(funname);
             data_sub = data-data_ctrl;
             if boot==0
                 smultipcolor(data_sub,0,1,FVL{funnum}.tt,{[montage...
-                    condsub] FVL{funnum}.sx},opis,1,0);
+                    condsub] FVL{funnum}.sx},opis1.opisy,1,0);
             else
                 smultipcolor3(data_sub,0,1,FVL{funnum}.tt,{[montage...
-                    condsub] FVL{funnum}.sx},opis,1,0);
+                    condsub 'Boot'] FVL{funnum}.sx},opis1.opisy,1,0);
             end
-            single_plot(data_sub,funnum, single_trials, FVL, montage, condsub, opis, fmin, fmax )
+            single_plot(data_sub,funnum, single_trials, FVL, montage, condsub, opis1.opisy, fmin, fmax )
         end
     else
         disp('subtraction aborted, exp and control file have different sets of electrodes')

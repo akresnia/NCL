@@ -1,6 +1,10 @@
+funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 %%% only CRef montage
 conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
 cond_nrs = [1,4]; % choose conditions for comparison, cond_nr: 1 to 6
+
+singleplots = {[3,6],[4,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3,4];
 
 montages={'Bplr','CAvr','CRef'};
 mont_nr = 3; %there is no bipolar available for TG
@@ -44,8 +48,10 @@ fclose(fid);
 
 descfil = [path 'TG_HG_chans.txt'];
 
-%% omitting preprocessing script
+%% constructing file names
 montage = char(montages(mont_nr));
+fnumbs=[]; %initialising to avoid missing parameter for subtraction func
+
 for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
     ns = ''; %temp name_suffix
     if subERP==1; ns='-ERP'; end
@@ -72,6 +78,7 @@ for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
         disp 'preprocessing...'
         preprocessing(subject,'TG',cond_nr,dec,mont_nr,subERP,filt);
     end
+    
     %% create new file
     data_HG = load(out_fname_HG);
     data_TG = load(out_fname_TG);
@@ -98,7 +105,27 @@ for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
 
     DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,...
         descfil,winlen,winshf,winnum,t0,t_end)   
-    
+
+    %% Plotting single DTF plots
+    if ~isempty(singleplots{1})
+        boot_sfx='';
+        if boot==1
+            boot_sfx='_boot';
+        end
+        global FVL FVS
+        load([out_fname '_mout.mat']); %saved results and mv params
+        
+        %idcs of saved and chosen functions; without 8=AR:
+        fnumbs=setdiff(intersect(getfuncsavenumbers(mv),funnums),8); 
+        
+        for j=fnumbs %loop over saved and chosen DTF functions
+            datv = eval([FVS{j}.vn boot_sfx]); %get the variable name
+            if boot==1
+                datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
+            end
+            single_plot(datv,j, singleplots, FVL, montage, cond, mv.opisy, fstart, fend)
+        end
+    end
 end
 
 %% Subtraction analysis
@@ -107,8 +134,7 @@ if subflag==1
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        for funnum=funnums
-            subtr_analysis(funnum, cond, path, montage, name_suffix_long,boot);
-        end
+        cond = char(conds(cond_nr));
+        subtr_analysis(fnumbs, cond, path, montage, name_suffix_long,boot,singleplots,fstart,fend);
     end
 end

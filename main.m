@@ -1,12 +1,13 @@
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
+funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 
 singleplots = {[3,6],[4,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
 funnums = [3,4];
 
 subject = '348';%'288_004' or '348'
 ntrls = 75;
-cond_nrs = [3];
+cond_nrs = [3,6];
 mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
@@ -14,18 +15,18 @@ dec = 2; %decimation factor
 fs = 1000/dec; %sampling freq
 subERP = 0; filt=0; %0/1
 subflag = 1;
-boot=0; %subtraction of bootstrapped (1) or "normal" (0) DTF plots
+boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 loc = 'HG'; %localisation 'HG' or 'TG'
 
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\']; 
 %% DTF parameters
 t0 = 1;%500/dec;
 t_end =2400/dec; %1900/dec;
-winlen = 80/dec;
+winlen = 1800/dec;
 fstart = 1;
 fend = 35;
-winshf = 20/dec;
-winnum = [];
+%winshf = 20/dec;
+winnum = 2;
 chansel = '1-';
 descfil = [path loc '_chans.txt'];
 if strcmp(loc, 'TG')     
@@ -37,6 +38,7 @@ end
 %changed amultipcolor.m!
 %channel descriptions are without bad electrodes (110/229 in 348_HG/348_TG)
 path = [path subject '_' loc '\'];
+fnumbs=[]; %initialising to avoid missing parameter for subtraction func
 for cond_nr=cond_nrs
     cond = char(conds(cond_nr));
     
@@ -64,17 +66,19 @@ for cond_nr=cond_nrs
     if ~isempty(singleplots{1})
         boot_sfx='';
         if boot==1
-            boot_sfx='_Boot';
+            boot_sfx='_boot';
         end
         global FVL FVS
-        load([out_fname '_mout' boot_sfx '.mat']); %saved results and mv params
-        opis = mv.opisy;
-        fnumbs2=getfuncsavenumbers(mv); %idx of saved functions; 8=AR
-        for j=fnumbs2 %loop over saved DTF functions
-            if j~=8 %not for AR V and coeff data
-                datv = eval(FVS{j}.vn); %get the variable name
-                single_plot(datv,j, singleplots, FVL, montage, cond, opis, fstart, fend)
+        load([out_fname '_mout.mat']); %saved results and mv params
+        %idcs of saved and chosen functions; without 8=AR
+        fnumbs=setdiff(intersect(getfuncsavenumbers(mv),funnums),8); 
+        
+        for j=fnumbs %loop over saved DTF functions
+            datv = eval([FVS{j}.vn boot_sfx]); %get the variable name
+            if boot==1
+                datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
             end
+            single_plot(datv,j, singleplots, FVL, montage, cond, mv.opisy, fstart, fend)
         end
     end
 
@@ -89,6 +93,6 @@ if subflag==1
     end
     for cond_nr=cond_nrs
         cond = char(conds(cond_nr));
-        subtr_analysis(funnums, cond, path, montage, name_suffix,boot,singleplots,fstart,30);
+        subtr_analysis(fnumbs, cond, path, montage, name_suffix,boot,singleplots,fstart,fend);
     end
 end
