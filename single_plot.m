@@ -12,8 +12,8 @@ if ~isempty(single_trials{1})
         shading(gca, 'flat')
         colorbar
         title({[montage cond] FVL{3}.sx(2:end)})
-        ylabel(['sink ' el2 'frequency [Hz]']);
-        xlabel(['time [ms] ' 'source' el1]);
+        ylabel(['sink ' el1 'frequency [Hz]']);
+        xlabel(['time [ms] ' 'source' el2]);
 
         ax = gca;
         xlim = ax.XLim(2);
