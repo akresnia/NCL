@@ -97,7 +97,8 @@ for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
     %[out_fname, nchan, ntrls,fs] = preprocessing(mont,loc,cond_nr,ch_del,montage,mred,subERP,filt);
 
     DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,...
-        descfil,winlen,winshf,winnum,t0,t_end)    
+        descfil,winlen,winshf,winnum,t0,t_end)   
+    
 end
 
 %% Subtraction analysis
@@ -106,6 +107,8 @@ if subflag==1
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        subtr_analysis(cond, path, montage, name_suffix_long,boot);
+        for funnum=funnums
+            subtr_analysis(funnum, cond, path, montage, name_suffix_long,boot);
+        end
     end
 end

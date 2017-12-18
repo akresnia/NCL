@@ -1,11 +1,12 @@
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 
-singleplots = {[3,2],[3,5]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+singleplots = {[3,6],[4,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3,4];
 
 subject = '348';%'288_004' or '348'
 ntrls = 75;
-cond_nrs = [3,6];
+cond_nrs = [3];
 mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
@@ -65,11 +66,16 @@ for cond_nr=cond_nrs
         if boot==1
             boot_sfx='_Boot';
         end
-        
-        load([out_fname(1:end-4) '_DTF_datv' boot_sfx '.mat']);
-        load('FVL.mat');
-        load([out_fname(1:end-4) '_opis.mat']);
-        single_plot(datv, singleplots, FVL, montage, cond, opis, fstart, fend)
+        global FVL FVS
+        load([out_fname '_mout' boot_sfx '.mat']); %saved results and mv params
+        opis = mv.opisy;
+        fnumbs2=getfuncsavenumbers(mv); %idx of saved functions; 8=AR
+        for j=fnumbs2 %loop over saved DTF functions
+            if j~=8 %not for AR V and coeff data
+                datv = eval(FVS{j}.vn); %get the variable name
+                single_plot(datv,j, singleplots, FVL, montage, cond, opis, fstart, fend)
+            end
+        end
     end
 
 end
@@ -82,6 +88,7 @@ if subflag==1
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        subtr_analysis(cond, path, montage, name_suffix,boot,singleplots,fstart,30);
+        cond = char(conds(cond_nr));
+        subtr_analysis(funnums, cond, path, montage, name_suffix,boot,singleplots,fstart,30);
     end
 end

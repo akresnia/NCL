@@ -1,4 +1,4 @@
-function single_plot(datv, single_trials, FVL, montage, cond, opis, fmin, fmax )
+function single_plot(datv,funnum, single_trials, FVL, montage, cond, opis, fmin, fmax )
 %plot one figure with vertical lines in 500,1200,1900 ms
 %   single_trials: {[1,2],[1,4]} or {[]} etc.
 if ~isempty(single_trials{1})
@@ -11,7 +11,7 @@ if ~isempty(single_trials{1})
         pcolor(squeeze(datv(idx1,idx2,:,:)))
         shading(gca, 'flat')
         colorbar
-        title({[montage cond] FVL{3}.sx(2:end)})
+        title({[montage cond] FVL{funnum}.sx(2:end)})
         ylabel(['sink ' el1 'frequency [Hz]']);
         xlabel(['time [ms] ' 'source' el2]);
 
@@ -22,7 +22,8 @@ if ~isempty(single_trials{1})
         set(ax,'TickDir','out');
         set(ax, 'XGrid','on');
         
-        tcks = linspace(fmin,fmax,11);
+        ylen = length(get(ax,'YTickLabel'));
+        tcks = linspace(fmin,fmax,ylen+1);
         datastring=sprintf('%g,',round(tcks(2:end)));
         datastring = datastring(1:end-1);
         str_ticks= strsplit(datastring, ',');
