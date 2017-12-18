@@ -1,10 +1,12 @@
 conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 
-subject = '288_004';%'288_004' or '348'
+singleplots = {[3,2],[3,5]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+
+subject = '348';%'288_004' or '348'
 ntrls = 75;
 cond_nrs = [3,6];
-mont_nr = 1; %1-bipolar, 2 - CAvr, 3-CRef
+mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
 dec = 2; %decimation factor
@@ -20,7 +22,7 @@ t0 = 1;%500/dec;
 t_end =2400/dec; %1900/dec;
 winlen = 80/dec;
 fstart = 1;
-fend = 100;
+fend = 35;
 winshf = 20/dec;
 winnum = [];
 chansel = '1-';
@@ -56,14 +58,30 @@ for cond_nr=cond_nrs
     end
     DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,...
         descfil,winlen,winshf,winnum,t0,t_end)    
+
+    %% Plotting single DTF plots
+    if ~isempty(singleplots{1})
+        boot_sfx='';
+        if boot==1
+            boot_sfx='_Boot';
+        end
+        
+        load([out_fname(1:end-4) '_DTF_datv' boot_sfx '.mat']);
+        load('FVL.mat');
+        load([out_fname(1:end-4) '_opis.mat']);
+        single_plot(datv, singleplots, FVL, montage, cond, opis, fstart, fend)
+    end
+
 end
+
+
+
 %% Subtraction analysis
 if subflag==1
     if (length(cond_nrs)==2 && (cond_nrs(2)-cond_nrs(1)==3))
         cond_nrs = cond_nrs(1);
     end
     for cond_nr=cond_nrs
-        singleplots = {[3,2]}; %{[]} or {[i,j]} or {[i,j],[k,l]}
         subtr_analysis(cond, path, montage, name_suffix,boot,singleplots,fstart,30);
     end
 end
