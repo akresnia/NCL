@@ -2,11 +2,14 @@ conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 
-singleplots = {[3,6],[4,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
-funnums = [3,4];
+singleplots = {[1,2],[3,4], [4,7], [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3,4,5,6]; %indices of funs
+subflag = 0; %0/1 - conduct subtraction analysis
+boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 
-subject = '348';%'288_004' or '348'
-ntrls = 75;
+subject = '288_004';%'288_004' or '348'
+loc = 'HG'; %localisation 'HG' or 'TG'
+
 cond_nrs = [3,6];
 mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
@@ -15,18 +18,17 @@ dec = 2; %decimation factor
 fs = 1000/dec; %sampling freq
 subERP = 0; filt=0; %0/1
 subflag = 1;
-boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
-loc = 'HG'; %localisation 'HG' or 'TG'
 
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\']; 
 %% DTF parameters
+ntrls = 75; %number of trials
 t0 = 1;%500/dec;
 t_end =2400/dec; %1900/dec;
-winlen = 1800/dec;
+winlen = 80/dec;
 fstart = 1;
-fend = 35;
-%winshf = 20/dec;
-winnum = 2;
+fend = 30;
+winshf = 20/dec;
+winnum = [];
 chansel = '1-';
 descfil = [path loc '_chans.txt'];
 if strcmp(loc, 'TG')     
@@ -38,7 +40,7 @@ end
 %changed amultipcolor.m!
 %channel descriptions are without bad electrodes (110/229 in 348_HG/348_TG)
 path = [path subject '_' loc '\'];
-fnumbs=[]; %initialising to avoid missing parameter for subtraction func
+fnumbs=funnums; %initialising to avoid missing parameter for subtraction func
 for cond_nr=cond_nrs
     cond = char(conds(cond_nr));
     
@@ -50,9 +52,9 @@ for cond_nr=cond_nrs
     else name_suffix = [ns '_dec' num2str(dec) '_filt'];end
     out_fname = [path,condit, name_suffix, '.mat'];
 
-    t = length(dir(out_fname)); %0 if preprocessed file doesn't exist
+    temp = length(dir(out_fname)); %0 if preprocessed file doesn't exist
 
-    if t==0
+    if temp==0
         disp 'preprocessing...'
         [out_fname, nchan, ntrls,fs] = preprocessing(subject,loc,cond_nr,dec,mont_nr,subERP,filt);
     else
@@ -89,7 +91,7 @@ end
 %% Subtraction analysis
 if subflag==1
     if (length(cond_nrs)==2 && (cond_nrs(2)-cond_nrs(1)==3))
-        cond_nrs = cond_nrs(1);
+        cond_nrs = cond_nrs(1); %plot figure once when coh-i and coh-0-i
     end
     for cond_nr=cond_nrs
         cond = char(conds(cond_nr));
