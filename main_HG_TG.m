@@ -1,13 +1,12 @@
 funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
-%%% only CRef montage
 conds = {'Coh-0-2','Coh-0-4','Coh-0-8','Coh-2','Coh-4','Coh-8'};
 cond_nrs = [1,4]; % choose conditions for comparison, cond_nr: 1 to 6
 
 singleplots = {[3,6],[4,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
-funnums = [3,4];
+funnums = [3,4]; %indices of functions from funs for individualplots; for plots' matrices defined in DTF_analysis.m
 
-montages={'Bplr','CAvr','CRef'};
-mont_nr = 3; %there is no bipolar available for TG
+montages={'Bplr','CAvr','CRef'}; % only CRef montage for TG
+mont_nr = 3; %there is no bipolar available yet
 subject = '348'; %'348' or '288_004'
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\' ];
 
@@ -16,19 +15,19 @@ TG_electrodes = '28,36'; %number of el. in descfile (348:1-63) or (288:1-96)
 HG_electrodes = '2,3,4,5,6,7,8'; %(1-11) or (1-8)
 
 %data and analysis parameters
-dec = 4; %decimation factor
+dec = 2; %decimation factor
 fs = 1000/dec; %original sampling frequency 1000 Hz
 subERP = 0; filt=0;
 subflag = 1; %subtraction analysis 0/1
-boot=0; %subtraction of bootstrapped (1) or "normal" (0) DTF plots
+boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 
 %% DTF parameters
 % 0-500ms = silence; 500-1200ms = ground; 1200-1900ms = figure+ground;
 % 1900-2400ms = silence
-t0 = 500/dec; %time range
-t_end = 1900/dec;
+t0 = 1; %time range 500/dec
+t_end = 2400/dec;
 winlen = 80/dec; %window length [samples]
-fstart = 0; %freq range
+fstart = 1; %freq range
 fend = 30;
 winshf = 20/dec; %window shift [samples]
 winnum = []; %number of windows; [] = program calculates from wlen and wshf
@@ -52,7 +51,7 @@ descfil = [path 'TG_HG_chans.txt'];
 montage = char(montages(mont_nr));
 fnumbs=[]; %initialising to avoid missing parameter for subtraction func
 
-for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
+for cond_nr=cond_nrs 
     ns = ''; %temp name_suffix
     if subERP==1; ns='-ERP'; end
     if filt==0; name_suffix = [ns '_dec' num2str(dec)];
@@ -60,7 +59,7 @@ for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
     %name_suffix = '_dec4';
     cond = char(conds(cond_nr));
     condit = [cond '_' montage];
-    if sum(strcmp(subject,{'348', '288_004'}))==0
+    if sum(strcmp(subject,{'348', '288_004'}))==0 %add every new subject to the cell after checking
         error('Subject not checked for bad electrodes')
     end
     out_fname_HG = [path,subject, '_HG\', condit, name_suffix, '.mat'];
@@ -112,6 +111,7 @@ for cond_nr=cond_nrs %i=1:length(cond_nrs); cond_nr = cond_nrs(i);
         if boot==1
             boot_sfx='_boot';
         end
+        
         global FVL FVS
         load([out_fname '_mout.mat']); %saved results and mv params
         

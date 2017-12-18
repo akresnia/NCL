@@ -1,7 +1,8 @@
-fname = 'C:\Users\Alicja\Desktop\Newcastle\348\348_HG\Coh-2-bipolar_stand.mat';
-load(fname);
-s1 = X_bipolar(5,:,5);%5s are arbitrary chosen from Coh-2-bipolar_stand.mat
-s2 = X_bipolar(8,:,7);
+fname = 'C:\Users\Alicja\Desktop\Newcastle\348\348_HG\Coh-2.mat';
+dat = load(fname);
+X = dat.X;
+s1 = X(5,:,5);%5s are arbitrary chosen from Coh-2-bipolar_stand.mat
+s2 = X(8,:,7);
 %s2 = X_bipolar(8,:,5)-mean(X_bipolar(8,:,:),3);
 dec = 2;
 s1 = decimate(s1,dec);
@@ -23,4 +24,4 @@ s(4,:) = s(1,1:end).*s(3,1:end)+0.001*randn(N);
 %s(7,:) = s(2,:)+0.0001*randn(N);
 %s(7,:) = (0.5*[ms,ms,ms,s(1,1:end-3)]).*(0.8*[ms,s(4,1:end-1)])+0.001*randn(N);
 plot(t,s(1,:),t,s(4,:))
-%save('test_ecog.mat', 's')
+save('test_ecog.mat', 's')

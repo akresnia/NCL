@@ -40,18 +40,17 @@ if strcmp(loc,'TG') %only common reference for TG
 end
 condit = [cond '_' montage];
 if mont_nr==1
-    data_mont = bipolar_montage_HG(data_in);
-    X = data_mont;
+    X = bipolar_montage_HG(data_in);
 elseif mont_nr==2
-    data_mont = GA_montage(data_in);
-    X = data_mont.X_GA;    
+    X = GA_montage(data_in);
+    
 elseif mont_nr==3
     X = data_in;
 else
     error('wrong montage parameter')
 end
 
-fs = 1000;
+fs = 1000; %sampling frequency
 
 %% get data parameters
 nchan = size(X,1); %11 channels for 348 HG
@@ -89,7 +88,7 @@ if filt==0
     name_suffix = [ns '_dec' num2str(dec)];
     sig_out = sig;
 else
-    [b,a] = butter(5, 5/(fs/2), 'high');
+    [b,a] = butter(3, 5/(fs/2), 'high');
     for tr=1:ntrls
         for c = 1:nchan
             sig_out(c,:,tr) = filtfilt(b,a, sig(c,:,tr));

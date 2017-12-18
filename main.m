@@ -2,16 +2,16 @@ conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 
-singleplots = {[1,2],[3,4], [4,7], [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
-funnums = [3,4,5,6]; %indices of funs
+singleplots = {[1,2]};%,[3,4], [4,7], [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3]; %indices of funs [3,4,5,6]
 subflag = 0; %0/1 - conduct subtraction analysis
 boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 
-subject = '288_004';%'288_004' or '348'
+subject = '348';%'288_004' or '348'
 loc = 'HG'; %localisation 'HG' or 'TG'
 
 cond_nrs = [3,6];
-mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
+mont_nr = 2; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
 dec = 2; %decimation factor
@@ -24,27 +24,25 @@ path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\'];
 ntrls = 75; %number of trials
 t0 = 1;%500/dec;
 t_end =2400/dec; %1900/dec;
-winlen = 80/dec;
-fstart = 1;
+winlen = 80/dec; % window length
+fstart = 1; %frequency range for analysis
 fend = 30;
-winshf = 20/dec;
-winnum = [];
-chansel = '1-';
+winshf = 20/dec; %window shift
+winnum = []; %calculated from winlen and winshf
+chansel = '1-'; %'1-' all channels 
 descfil = [path loc '_chans.txt'];
 if strcmp(loc, 'TG')     
-    chansel = '1 , 3 ,4 ,9 , 10 , 11 , 12,17,18,19,20,28';%'1,9,17,25,33,40,48,56';
+    chansel = '1,3,4,9,10,11,12,17,18,19,20,28';% chosen for '348'
 end
-% chansel='6,7,9,10';
 
 %% DTF analysis
-%changed amultipcolor.m!
 %channel descriptions are without bad electrodes (110/229 in 348_HG/348_TG)
 path = [path subject '_' loc '\'];
 fnumbs=funnums; %initialising to avoid missing parameter for subtraction func
 for cond_nr=cond_nrs
     cond = char(conds(cond_nr));
     
-    %checking if the .mat file exists:
+    %% Checking if the .mat file exists:
     condit = [cond '_' montage];
     ns = ''; %temp name_suffix
     if subERP==1; ns='-ERP'; end
