@@ -1,5 +1,5 @@
 function DTF_analysis(fname, chans, ntrls, fsamp, fstart, fend,chansel,...
-    descfil, winlen,winshf,winnum,t0,t_end)
+    descfil, winlen,winshf,winnum,t0,t_end,bootflag,baseflag)
     %creating mv struct for DTF analysis
     %   FRQPMAX defined in this script
     
@@ -7,8 +7,8 @@ function DTF_analysis(fname, chans, ntrls, fsamp, fstart, fend,chansel,...
     format = 6; %MAT file
     trial_mode = 0; % 0 == multitrial; 1 == trial-by-trial
 
-    baseln = 0; %estimate baseline
-    bootst = 0; %run bootstrap
+    baseln = baseflag; %estimate baseline
+    bootst = bootflag; %run bootstrap
     siglev = 2; %significance level 1 = .99; 2 = .95; 3 = .9; 4 = .75;
     norm2 = 0; %ensemble mean
     %norm1 = 1; %std division
