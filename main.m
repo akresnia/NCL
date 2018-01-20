@@ -2,28 +2,28 @@ conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 
-singleplots = {[1,2]};%,[3,4], [4,7], [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
-funnums = [3]; %indices of funs [3,4,5,6]
-subflag = 0; %0/1 - conduct subtraction analysis
-boot=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
+singleplots = {[1,2],[3,4], [4,7]};%, [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3,4,6]; %indices of funs [3,4,5,6]
+subflag = 1; %0/1 - conduct subtraction analysis
+bootflag=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
+baseflag=1;
 
-subject = '348';%'288_004' or '348'
+subject = '288_004';%'288_004' or '348'
 loc = 'HG'; %localisation 'HG' or 'TG'
 
 cond_nrs = [3,6];
-mont_nr = 2; %1-bipolar, 2 - CAvr, 3-CRef
+mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
-dec = 2; %decimation factor
+dec = 8;%2; %decimation factor
 fs = 1000/dec; %sampling freq
 subERP = 0; filt=0; %0/1
-subflag = 1;
 
 path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\']; 
 %% DTF parameters
 ntrls = 75; %number of trials
 t0 = 1;%500/dec;
-t_end =2400/dec; %1900/dec;
+t_end =400/dec; %whole=2400; 1900/dec;
 winlen = 80/dec; % window length
 fstart = 1; %frequency range for analysis
 fend = 30;
@@ -60,13 +60,15 @@ for cond_nr=cond_nrs
         nchan = nch.nchan;
     end
     DTF_analysis(out_fname, nchan, ntrls, fs,fstart,fend,chansel,...
-        descfil,winlen,winshf,winnum,t0,t_end)    
+        descfil,winlen,winshf,winnum,t0,t_end, bootflag, baseflag)    
 
     %% Plotting single DTF plots
     if ~isempty(singleplots{1})
         boot_sfx='';
-        if boot==1
+        if bootflag==1
             boot_sfx='_boot';
+        elseif baseflag==1
+            base_sfx = '_base';
         end
         global FVL FVS
         load([out_fname '_mout.mat']); %saved results and mv params
@@ -75,10 +77,16 @@ for cond_nr=cond_nrs
         
         for j=fnumbs %loop over saved DTF functions
             datv = eval([FVS{j}.vn boot_sfx]); %get the variable name
-            if boot==1
+            if bootflag==1
                 datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
             end
-            single_plot(datv,j, singleplots, FVL, montage, cond, mv.opisy, fstart, fend)
+            if baseflag
+                datv_base = eval([FVS{j}.vn base_sfx]);
+                datv_base = repelem(datv_base(:,:,1,:),1,1,100,1); %WHY???
+                datv0 = datv - datv_base;
+                datv(datv0<0)=NaN;
+            end
+            single_plot(datv,j, singleplots, FVL, montage, cond, mv.opisy, fstart, fend, bootflag)
         end
     end
 
@@ -93,6 +101,6 @@ if subflag==1
     end
     for cond_nr=cond_nrs
         cond = char(conds(cond_nr));
-        subtr_analysis(fnumbs, cond, path, montage, name_suffix,boot,singleplots,fstart,fend);
+        subtr_analysis(fnumbs, cond, path, montage, name_suffix,bootflag,singleplots,fstart,fend);
     end
 end
