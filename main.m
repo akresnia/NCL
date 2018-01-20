@@ -80,7 +80,7 @@ for cond_nr=cond_nrs
             end
             if baseflag==1
                 datv_base = eval([FVS{j}.vn '_base']);
-                datv_base = repelem(datv_base(:,:,1,:),1,1,100,1); %WHY???
+                datv_base = repelem(datv_base(:,:,2,:),1,1,100,1); %2, because median
                 datv0 = datv - datv_base;
                 datv(datv0<0)=NaN;
             end
