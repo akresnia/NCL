@@ -1,4 +1,4 @@
-function single_plot(datv,funnum, single_trials, FVL, montage, cond, opis, fmin, fmax )
+function single_plot(datv,funnum, single_trials, FVL, montage, cond, opis, fmin, fmax, bootflag )
 %plot one figure with vertical lines in 500,1200,1900 ms
 %   datv: 4D data matrix, chan x chan x freqpoints(y) x winnum(x)
 %   funnum: int, index of function in funs
@@ -8,6 +8,8 @@ function single_plot(datv,funnum, single_trials, FVL, montage, cond, opis, fmin,
 %   cond: string i.e. 'Coh-0-8'
 %   opis: channels description
 %   fmin, fmax: frequency range of DTF data
+if bootflag==1
+    cond = [cond ' Boot'];
 
 if ~isempty(single_trials{1})
     for i=single_trials %{[1,1],[2,3]}
