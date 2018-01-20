@@ -2,10 +2,10 @@ conds = {'Coh-0-2', 'Coh-0-4', 'Coh-0-8', 'Coh-2', 'Coh-4','Coh-8'};
 montages={'Bplr','CAvr','CRef'};
 funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 
-singleplots = {[1,2],[3,4], [4,7]};%, [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
-funnums = [3,4,6]; %indices of funs [3,4,5,6]
+singleplots = {[1,3],[3,4]};%, [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
+funnums = [3,4]; %indices of funs [3,4,5,6]
 subflag = 1; %0/1 - conduct subtraction analysis
-bootflag=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
+bootflag=1; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 baseflag=1;
 
 subject = '288_004';%'288_004' or '348'
@@ -15,7 +15,7 @@ cond_nrs = [3,6];
 mont_nr = 3; %1-bipolar, 2 - CAvr, 3-CRef
 montage = char(montages(mont_nr));
 
-dec = 8;%2; %decimation factor
+dec = 4; %2 decimation factor
 fs = 1000/dec; %sampling freq
 subERP = 0; filt=0; %0/1
 
@@ -23,13 +23,13 @@ path = ['C:\Users\Alicja\Desktop\Newcastle\' subject '\'];
 %% DTF parameters
 ntrls = 75; %number of trials
 t0 = 1;%500/dec;
-t_end =400/dec; %whole=2400; 1900/dec;
+t_end =2400/dec; %whole=2400; 1900/dec;
 winlen = 80/dec; % window length
 fstart = 1; %frequency range for analysis
 fend = 30;
 winshf = 20/dec; %window shift
 winnum = []; %calculated from winlen and winshf
-chansel = '1-'; %'1-' all channels 
+chansel = '3,4,5,6,7'; %'1-' all channels 
 descfil = [path loc '_chans.txt'];
 if strcmp(loc, 'TG')     
     chansel = '1,3,4,9,10,11,12,17,18,19,20,28';% chosen for '348'
@@ -67,8 +67,6 @@ for cond_nr=cond_nrs
         boot_sfx='';
         if bootflag==1
             boot_sfx='_boot';
-        elseif baseflag==1
-            base_sfx = '_base';
         end
         global FVL FVS
         load([out_fname '_mout.mat']); %saved results and mv params
@@ -80,8 +78,8 @@ for cond_nr=cond_nrs
             if bootflag==1
                 datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
             end
-            if baseflag
-                datv_base = eval([FVS{j}.vn base_sfx]);
+            if baseflag==1
+                datv_base = eval([FVS{j}.vn '_base']);
                 datv_base = repelem(datv_base(:,:,1,:),1,1,100,1); %WHY???
                 datv0 = datv - datv_base;
                 datv(datv0<0)=NaN;
