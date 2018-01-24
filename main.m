@@ -5,7 +5,7 @@ funs = {'Spectrum', 'Coherence', 'DTF','NDTF','dDTF','PDC','ffDTF'};
 singleplots = {[1,3],[3,4]};%, [4,5],[3,2],[3,7]}; %{[]} or {[i,j]} or {[i,j],[k,l]}; indices of electr. 1:nchan
 funnums = [3,4]; %indices of funs [3,4,5,6]
 subflag = 1; %0/1 - conduct subtraction analysis
-bootflag=1; %plotting of bootstrapped (1) or "normal" (0) DTF plots
+bootflag=0; %plotting of bootstrapped (1) or "normal" (0) DTF plots
 baseflag=1;
 
 subject = '288_004';%'288_004' or '348'
@@ -68,7 +68,7 @@ for cond_nr=cond_nrs
         if bootflag==1
             boot_sfx='_boot';
         end
-        global FVL FVS
+        global FVL FVS FRQPMAX
         load([out_fname '_mout.mat']); %saved results and mv params
         %idcs of saved and chosen functions; without 8=AR
         fnumbs=setdiff(intersect(getfuncsavenumbers(mv),funnums),8); 
@@ -76,11 +76,12 @@ for cond_nr=cond_nrs
         for j=fnumbs %loop over saved DTF functions
             datv = eval([FVS{j}.vn boot_sfx]); %get the variable name
             if bootflag==1
-                datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
+                per = 2; %1- lower, 2 -median, 3- upper percentile, for bootstrap calculations
+                datv = squeeze(datv(:,:,:,per,:)); %1- lower, 2 -median, 3- upper
             end
             if baseflag==1
                 datv_base = eval([FVS{j}.vn '_base']);
-                datv_base = repelem(datv_base(:,:,2,:),1,1,100,1); %2, because median
+                datv_base = repelem(datv_base(:,:,per,:),1,1,FRQPMAX,1); 
                 datv0 = datv - datv_base;
                 datv(datv0<0)=NaN;
             end
@@ -99,6 +100,6 @@ if subflag==1
     end
     for cond_nr=cond_nrs
         cond = char(conds(cond_nr));
-        subtr_analysis(fnumbs, cond, path, montage, name_suffix,bootflag,singleplots,fstart,fend);
+        subtr_analysis(fnumbs, cond, path, montage, name_suffix,bootflag, baseflag,singleplots,fstart,fend);
     end
 end

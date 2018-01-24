@@ -116,7 +116,7 @@ for cond_nr=cond_nrs
             base_sfx = '_base';
         end
         
-        global FVL FVS
+        global FVL FVS FRQPMAX
         load([out_fname '_mout.mat']); %saved results and mv params
         
         %idcs of saved and chosen functions; without 8=AR:
@@ -125,11 +125,12 @@ for cond_nr=cond_nrs
         for j=fnumbs %loop over saved and chosen DTF functions
             datv = eval([FVS{j}.vn boot_sfx]); %get the variable name
             if bootflag==1
-                datv = squeeze(datv(:,:,:,2,:)); %1- lower, 2 -median, 3- upper
+                per= 2; %1- lower, 2 -median, 3- upper percentile, for bootstrap calculations 
+                datv = squeeze(datv(:,:,:,per,:)); 
             end
             if baseflag
                 datv_base = eval([FVS{j}.vn base_sfx]);
-                datv_base = repelem(datv_base(:,:,1,:),1,1,100,1); %WHY???
+                datv_base = repelem(datv_base(:,:,per,:),1,1,FRQPMAX,1); 
                 datv0 = datv - datv_base;
                 datv(datv0<0)=NaN;
             end
@@ -145,6 +146,7 @@ if subflag==1
     end
     for cond_nr=cond_nrs
         cond = char(conds(cond_nr));
-        subtr_analysis(fnumbs, cond, path, montage, name_suffix_long,bootflag,singleplots,fstart,fend);
+        subtr_analysis(fnumbs, cond, path, montage, name_suffix_long,bootflag, baseflag,...
+            singleplots,fstart,fend);
     end
 end
